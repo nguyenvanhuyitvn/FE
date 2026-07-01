@@ -1,0 +1,60 @@
+-- Tạo bảng SINHVIEN
+CREATE TABLE SINHVIEN (
+    MaSV VARCHAR(10) PRIMARY KEY,
+    HoTen VARCHAR(100) NOT NULL,
+    NgaySinh DATE,
+    Lop VARCHAR(20)
+);
+
+-- Tạo bảng KETQUA
+CREATE TABLE KETQUA (
+    MaSV VARCHAR(10),
+    MaMon VARCHAR(10),
+    Diem DECIMAL(3,1),
+    NgayThi DATE,
+    FOREIGN KEY (MaSV) REFERENCES SINHVIEN(MaSV),
+    PRIMARY KEY (MaSV, MaMon)
+);
+
+-- Chèn dữ liệu vào SINHVIEN
+INSERT INTO SINHVIEN (MaSV, HoTen, NgaySinh, Lop) VALUES
+('SV01', 'Phạm Văn Anh', '2002-05-12', 'CNTT-K60'),
+('SV02', 'Nguyễn Thị Bình', '2003-08-25', 'CNTT-K60'),
+('SV03', 'Lê Văn Cường', '2002-11-02', 'KTPM-K61'),
+('SV04', 'Trần Thị Dung', '2003-01-15', 'KTPM-K61'),
+('SV05', 'Hoàng Văn Đức', '2002-09-30', 'CNTT-K60'),
+('SV06', 'Vũ Thị Hương', '2003-07-19', 'HTTT-K62');
+
+-- Chèn dữ liệu vào KETQUA
+INSERT INTO KETQUA (MaSV, MaMon, Diem, NgayThi) VALUES
+('SV01', 'MM01', 8.5, '2025-06-10'),
+('SV01', 'MM02', 7.0, '2025-06-12'),
+('SV02', 'MM01', 9.0, '2025-06-10'),
+('SV02', 'MM03', 6.5, '2025-06-15'),
+('SV03', 'MM02', 5.5, '2025-06-12'),
+('SV04', 'MM01', 7.5, '2025-06-10'),
+('SV04', 'MM02', 8.0, '2025-06-12'),
+('SV04', 'MM03', 6.0, '2025-06-15'),
+('SV05', 'MM01', 4.5, '2025-06-10');
+-- SV06 không có dòng nào trong KETQUA
+
+-- a) Liệt kê HoTen, Lop và điểm trung bình (làm tròn đến 2 chữ số thập phân) của từng sinh viên.
+-- Chỉ hiển thị những sinh viên có điểm trung bình >= 7.0.
+
+SELECT 
+    SV.HoTen, 
+    SV.Lop, 
+    ROUND(AVG(K.Diem), 2) AS DiemTrungBinh
+FROM SINHVIEN SV
+JOIN KETQUA K ON SV.MaSV = K.MaSV
+GROUP BY SV.MaSV, SV.HoTen, SV.Lop
+HAVING AVG(K.Diem) >= 7.0;
+
+-- b) Tìm HoTen và Lop của sinh viên đạt điểm cao nhất trong môn MM02 (nếu có nhiều sinh viên cùng điểm cao nhất thì hiển thị tất cả).
+-- Kết quả cần có thêm cột Diem để hiển thị điểm số đó.
+
+SELECT SV.HoTen, SV.Lop, K.Diem
+FROM SINHVIEN SV
+JOIN KETQUA K ON SV.MaSV = K.MaSV
+WHERE K.MaMon = 'MM02'
+  AND K.Diem = (SELECT MAX(Diem) FROM KETQUA WHERE MaMon = 'MM02');
