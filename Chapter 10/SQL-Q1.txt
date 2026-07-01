@@ -1,0 +1,53 @@
+
+-- Xoá bảng cũ nếu đã tồn tại (để chạy lại từ đầu)
+DROP TABLE IF EXISTS HOADON;
+DROP TABLE IF EXISTS KHACHHANG;
+
+-- Tạo bảng KHACHHANG
+CREATE TABLE KHACHHANG (
+    MaKH VARCHAR(10) PRIMARY KEY,
+    HoTen VARCHAR(100) NOT NULL,
+    SoDienThoai VARCHAR(15),
+    DiaChi VARCHAR(200)
+);
+
+-- Tạo bảng HOADON
+CREATE TABLE HOADON (
+    MaHD INT AUTO_INCREMENT PRIMARY KEY,
+    MaKH VARCHAR(10),
+    NgayMua DATE,
+    TongTien DECIMAL(12,0),
+    MaSanPham VARCHAR(10),
+    CONSTRAINT fk_khachhang FOREIGN KEY (MaKH) REFERENCES KHACHHANG(MaKH)
+);
+
+-- Chèn dữ liệu vào KHACHHANG
+INSERT INTO KHACHHANG (MaKH, HoTen, SoDienThoai, DiaChi) VALUES
+('KH01', 'Nguyễn Văn A', '0981111111', 'Hà Nội'),
+('KH02', 'Trần Thị B', '0982222222', 'Hồ Chí Minh'),
+('KH03', 'Lê Văn C', '0983333333', 'Đà Nẵng'),
+('KH04', 'Phạm Thị D', '0984444444', 'Hà Nội');
+
+-- Chèn dữ liệu vào HOADON
+INSERT INTO HOADON (MaHD, MaKH, NgayMua, TongTien, MaSanPham) VALUES
+(1, 'KH01', '2025-06-01', 1500000, 'SP01'),
+(2, 'KH01', '2025-06-10', 2300000, 'SP02'),
+(3, 'KH02', '2025-06-05', 3200000, 'SP01'),
+(4, 'KH03', '2025-06-15', 700000, 'SP03'),
+(5, 'KH02', '2025-06-20', 400000, 'SP03'),
+(6, 'KH04', '2025-06-18', 500000, 'SP01');
+
+-- a) Liệt kê HoTen và tổng số tiền (TongTien) của tất cả hóa đơn mà mỗi khách hàng đã mua. Chỉ hiển thị những khách hàng có tổng số tiền mua hàng lớn hơn 1.000.000 đồng. Sắp xếp kết quả theo tổng tiền giảm dần.
+
+SELECT KH.HoTen, SUM(HD.TongTien) AS TongTien
+FROM KHACHHANG KH
+JOIN HOADON HD ON KH.MaKH = HD.MaKH
+GROUP BY KH.MaKH, KH.HoTen
+HAVING SUM(HD.TongTien) > 1000000
+ORDER BY TongTien DESC;
+
+-- b) Tìm HoTen và SoDienThoai của những khách hàng đã mua hàng cách đây nhiều nhất. Nói cách khác, tìm khách hàng có hóa đơn cũ nhất (hóa đơn có NgayMua nhỏ nhất).
+SELECT KH.HoTen, KH.SoDienThoai
+FROM KHACHHANG KH
+JOIN HOADON HD ON KH.MaKH = HD.MaKH
+WHERE HD.NgayMua = (SELECT MIN(NgayMua) FROM HOADON);
